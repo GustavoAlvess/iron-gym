@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  h1, h2, h3, h4, .font-heading {
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.05em;
+  }
+}
+
+/* Efeitos Customizados de Brilho e Animação */
+.glow-red {
+  box-shadow: 0 0 25px -5px rgba(220, 38, 38, 0.4);
+}
+
+.glow-red-lg {
+  box-shadow: 0 0 40px -5px rgba(220, 38, 38, 0.6);
+}
+
+/* Smooth Scrolling global */
+html {
+  scroll-behavior: smooth;
+}

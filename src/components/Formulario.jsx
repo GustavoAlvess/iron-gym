@@ -18,28 +18,47 @@ export const Formulario = ({ planoSelecionado }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Limpa o erro do campo assim que o usuário começa a digitar
+    if (erros[name]) {
+      setErros((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Executa a validação do Zod
     const result = matriculaSchema.safeParse(formData);
 
     if (!result.success) {
       const fieldErrors = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) fieldErrors[err.path[0]] = err.message;
+      
+      // Mapeia os erros retornados pelo Zod para o objeto de erros
+      result.error.issues.forEach((issue) => {
+        const fieldName = issue.path[0];
+        if (fieldName && !fieldErrors[fieldName]) {
+          fieldErrors[fieldName] = issue.message;
+        }
       });
+
       setErros(fieldErrors);
       setSucesso(false);
     } else {
       setErros({});
       setSucesso(true);
-      setFormData({ nome: '', email: '', idade: '', plano: 'Plano Pro', objetivo: 'Hipertrofia' });
+      setFormData({ 
+        nome: '', 
+        email: '', 
+        idade: '', 
+        plano: planoSelecionado || 'Plano Pro', 
+        objetivo: 'Hipertrofia' 
+      });
     }
   };
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 max-w-xl mx-auto shadow-2xl">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 max-w-xl mx-auto shadow-2xl my-8">
       <h2 className="text-2xl font-black text-white mb-2 uppercase">Pré-Matrícula Iron Gym</h2>
       <p className="text-zinc-400 mb-6 text-sm">Preencha os dados abaixo para garantir suas condições especiais.</p>
 
@@ -50,7 +69,8 @@ export const Formulario = ({ planoSelecionado }) => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        {/* Campo Nome */}
         <div>
           <label className="block text-xs font-bold text-zinc-300 uppercase mb-1">Nome Completo</label>
           <div className="relative">
@@ -61,12 +81,17 @@ export const Formulario = ({ planoSelecionado }) => {
               value={formData.nome}
               onChange={handleChange}
               placeholder="Digite seu nome"
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-10 pr-4 py-2.5 text-white text-sm focus:border-red-600 focus:outline-none"
+              className={`w-full bg-zinc-950 border ${erros.nome ? 'border-red-500' : 'border-zinc-800'} rounded-lg pl-10 pr-4 py-2.5 text-white text-sm focus:border-red-600 focus:outline-none transition-colors`}
             />
           </div>
-          {erros.nome && <p className="text-red-500 text-xs mt-1">{erros.nome}</p>}
+          {erros.nome && (
+            <p className="text-red-500 text-xs font-semibold mt-1.5 flex items-center gap-1">
+              {erros.nome}
+            </p>
+          )}
         </div>
 
+        {/* Campo E-mail */}
         <div>
           <label className="block text-xs font-bold text-zinc-300 uppercase mb-1">E-mail</label>
           <div className="relative">
@@ -77,13 +102,18 @@ export const Formulario = ({ planoSelecionado }) => {
               value={formData.email}
               onChange={handleChange}
               placeholder="seu@email.com"
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-10 pr-4 py-2.5 text-white text-sm focus:border-red-600 focus:outline-none"
+              className={`w-full bg-zinc-950 border ${erros.email ? 'border-red-500' : 'border-zinc-800'} rounded-lg pl-10 pr-4 py-2.5 text-white text-sm focus:border-red-600 focus:outline-none transition-colors`}
             />
           </div>
-          {erros.email && <p className="text-red-500 text-xs mt-1">{erros.email}</p>}
+          {erros.email && (
+            <p className="text-red-500 text-xs font-semibold mt-1.5 flex items-center gap-1">
+              {erros.email}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Campo Idade */}
           <div>
             <label className="block text-xs font-bold text-zinc-300 uppercase mb-1">Idade</label>
             <div className="relative">
@@ -93,13 +123,18 @@ export const Formulario = ({ planoSelecionado }) => {
                 name="idade"
                 value={formData.idade}
                 onChange={handleChange}
-                placeholder="Ex: 22"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-10 pr-4 py-2.5 text-white text-sm focus:border-red-600 focus:outline-none"
+                placeholder="Ex: 18"
+                className={`w-full bg-zinc-950 border ${erros.idade ? 'border-red-500' : 'border-zinc-800'} rounded-lg pl-10 pr-4 py-2.5 text-white text-sm focus:border-red-600 focus:outline-none transition-colors`}
               />
             </div>
-            {erros.idade && <p className="text-red-500 text-xs mt-1">{erros.idade}</p>}
+            {erros.idade && (
+              <p className="text-red-500 text-xs font-semibold mt-1.5 flex items-center gap-1">
+                {erros.idade}
+              </p>
+            )}
           </div>
 
+          {/* Seleção do Plano */}
           <div>
             <label className="block text-xs font-bold text-zinc-300 uppercase mb-1">Plano Desejado</label>
             <select
@@ -112,9 +147,15 @@ export const Formulario = ({ planoSelecionado }) => {
               <option value="Plano Pro">Plano Pro</option>
               <option value="Plano Black VIP">Plano Black VIP</option>
             </select>
+            {erros.plano && (
+              <p className="text-red-500 text-xs font-semibold mt-1.5 flex items-center gap-1">
+                {erros.plano}
+              </p>
+            )}
           </div>
         </div>
 
+        {/* Seleção do Objetivo */}
         <div>
           <label className="block text-xs font-bold text-zinc-300 uppercase mb-1">Objetivo Principal</label>
           <div className="relative">
@@ -131,9 +172,14 @@ export const Formulario = ({ planoSelecionado }) => {
               <option value="Saude">Saúde e Bem-estar</option>
             </select>
           </div>
+          {erros.objetivo && (
+            <p className="text-red-500 text-xs font-semibold mt-1.5 flex items-center gap-1">
+              {erros.objetivo}
+            </p>
+          )}
         </div>
 
-        <Button type="submit" variant="primary" className="w-full mt-4">
+        <Button type="submit" variant="primary" className="w-full mt-6 py-3">
           Concluir Matrícula
         </Button>
       </form>
